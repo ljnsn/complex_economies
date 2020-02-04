@@ -246,7 +246,7 @@ class ConsumptionGoodFirm(Firm):
         return want_to_scrap
 
     def forecast_replacement_investment(self):
-        return sum([m['stock'] for m in self.want_to_scrap])
+        return sum([self.machines[m]['stock'] for m in self.want_to_scrap])
 
     def fix_investment(self):
         """Allocate between expanding capital stock and replacement

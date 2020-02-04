@@ -67,9 +67,7 @@ class ComplexEconomy(Model):
     agg_production = d(0)
 
     def __init__(self, parameters, market_wage, cpi, avg_labour_productivity,
-                 liquid_assets, capital_stock, labour_supply, innovation=False,
-                 social_policy='base', inventory_deprecation=0, fix_supplier=False,
-                 seed=None):
+                 liquid_assets, capital_stock, labour_supply, seed=None):
         self.schedule = GroupedActivation(
             self, self.groups, self.stages,
             interim_functions=self.stage_functions
@@ -146,9 +144,9 @@ class ComplexEconomy(Model):
                 }
             }
         )
-        self.innovation = innovation
-        self.social_policy = social_policy
-        self.inventory_deprecation = d(inventory_deprecation)
+        self.innovation = parameters['innovation']
+        self.social_policy = parameters['social_policy']
+        self.inventory_deprecation = parameters['inventory_deprecation']
 
         # parameters
         n_consumption_firms = parameters['n_consumption_firms']
@@ -190,7 +188,7 @@ class ComplexEconomy(Model):
         # create consumption good firms
         supplier = 0
         for i in range(int(n_consumption_firms)):
-            if fix_supplier:
+            if parameters['fix_supplier']:
                 if i % 4 == 0 and i != 0:
                     supplier += 1
             else:
