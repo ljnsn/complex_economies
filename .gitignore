@@ -6,6 +6,7 @@
 
 # scratch files
 scratch*
+analysis.py
 
 # chache stuff
 __pycache__/
@@ -16,4 +17,11 @@ __pycache__/
 
 # spyder
 .spyproject/
+
+# pipenv
+Pipfile
+Pipfile.lock
+
+# pdf docs
+*.pdf
 
