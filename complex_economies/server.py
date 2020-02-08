@@ -80,7 +80,7 @@ model_params = {
 }
 
 # map data to chart in the ChartModule
-chart_element = ChartModule([
+chart_1 = ChartModule([
     {"Label": "gdp", "Color": gdp_colour},
     {"Label": "consumption", "Color": consumption_colour},
     {"Label": "production", "Color": production_colour},
@@ -88,9 +88,16 @@ chart_element = ChartModule([
     {"Label": "inventories", "Color": inventories_colour}
 ])
 
+chart_2 = ChartModule([
+    {"Label": "labour_supply", "Color": gdp_colour},
+    {"Label": "labour_demand", "Color": consumption_colour},
+    {"Label": "employment", "Color": production_colour},
+    {"Label": "unemployment", "Color": investment_colour}
+])
+
 # create instance of Mesa ModularServer
 server = ModularServer(
-    ComplexEconomy, [chart_element],
+    ComplexEconomy, [chart_1, chart_2],
     "Complex Economy Model",
     model_params=model_params
 )
