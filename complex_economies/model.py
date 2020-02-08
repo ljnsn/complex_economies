@@ -85,7 +85,8 @@ class ComplexEconomy(Model):
     agg_production = d(0)
 
     def __init__(self, parameters, market_wage, cpi, avg_labour_productivity,
-                 liquid_assets, capital_stock, labour_supply, seed=None):
+                 liquid_assets, capital_stock, labour_supply, innovation,
+                 seed=None):
         self.schedule = GroupedActivation(
             self, self.groups, self.stages,
             interim_functions=self.stage_functions
@@ -162,7 +163,7 @@ class ComplexEconomy(Model):
                 }
             }
         )
-        self.innovation = parameters['innovation']
+        self.innovation = innovation
         self.social_policy = parameters['social_policy']
         self.inventory_deprecation = parameters['inventory_deprecation']
 
