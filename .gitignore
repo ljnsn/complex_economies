@@ -25,3 +25,7 @@ Pipfile.lock
 # pdf docs
 *.pdf
 
+
+*.ods
+
+*.yml
