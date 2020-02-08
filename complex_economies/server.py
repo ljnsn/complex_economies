@@ -48,10 +48,11 @@ benchmark_parameters = {
 # dictionary of user settable parameters - these map to the model __init__ parameters
 init_conditions = {
     "market_wage": UserSettableParameter(
-        "slider", "Market Wage", 100, 1, 200, description="Initial market wage"
+        "slider", name="Market Wage", value=100, min_value=1, max_value=200,
+        description="Initial market wage"
     ),
     "cpi": UserSettableParameter(
-        "slider", "Consumer Price Index", 1.3, 1, 2,
+        "number", "Consumer Price Index", 1.3, 1, 2,
         description="Initial cpi level"
     ),
     "avg_labour_productivity": UserSettableParameter(
