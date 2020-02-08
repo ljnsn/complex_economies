@@ -95,9 +95,15 @@ chart_2 = ChartModule([
     {"Label": "unemployment", "Color": investment_colour}
 ])
 
+chart_3 = ChartModule([
+    {"Label": "avg_comp_competitiveness", "Color": gdp_colour},
+    {"Label": "avg_cap_competitiveness", "Color": consumption_colour},
+    {"Label": "market_wage", "Color": production_colour}
+])
+
 # create instance of Mesa ModularServer
 server = ModularServer(
-    ComplexEconomy, [chart_1, chart_2],
+    ComplexEconomy, [chart_1, chart_2, chart_3],
     "Complex Economy Model",
     model_params=model_params
 )
