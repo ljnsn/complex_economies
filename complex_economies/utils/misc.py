@@ -8,4 +8,4 @@ c.traps[FloatOperation] = True
 
 
 def d(v):
-    return Decimal(str(v)) # round(float(v), 4)
+    return round(float(v), 4)  # Decimal(str(v))
