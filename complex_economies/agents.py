@@ -94,7 +94,7 @@ class ConsumptionGoodFirm(Firm):
                 'stock': 40
             } for supplier in capital_firms
         }
-        self.demand = self.market_share * self.model.consumption
+        self.demand = self.market_share * self.model.consumption  # / self.model.cpi
         self.production = self.demand
         self.output = self.production
         self.sales = self.output
@@ -133,7 +133,7 @@ class ConsumptionGoodFirm(Firm):
             return 0
         return 1 - self.sales / self.demand
 
-    def compute_average_productivity(self):  # FIXME: why doesn't come out as 100?
+    def compute_average_productivity(self):
         productivities = []
         machine_set = list(self.machines.keys())
         for machine_type in machine_set:
@@ -154,10 +154,11 @@ class ConsumptionGoodFirm(Firm):
     def adjust_competitiveness(self):
         w1, w2 = self.model.competitiveness_weights[0]
         adj = round(-w1 * self.price - w2 * self.unfilled_demand_rate, 2)
-        self.competitiveness += adj
+        self.competitiveness = max(0, self.competitiveness - adj)
 
     def compute_debt_availability(self):
-        return self.model.max_debt_sales_ratio * self.sales - self.debt_stock
+        max_debt = self.model.max_debt_sales_ratio * self.sales
+        return max(0, max_debt - self.debt_stock)
 
     def forecast_demand(self, myopic=True):
         if myopic:
@@ -174,10 +175,7 @@ class ConsumptionGoodFirm(Firm):
         ])
 
     def forecast_production(self):
-        demand_net = (
-            self.expected_demand
-            - self.inventory * (1 - self.model.inventory_deprecation)
-        )
+        demand_net = self.expected_demand - self.inventory
         return max(0, demand_net)
 
     def forecast_capital_stock(self):
@@ -225,12 +223,12 @@ class ConsumptionGoodFirm(Firm):
         return (
             new_supplier_id
             if max(ratios) > current_supplier.machine.lpc_price_ratio
-            else self.supplier
+            else self.supplier  # NOTE: causes consolidation in cap market?
         )
 
     def plan_replacement(self):
         supplier = self.model.schedule.get_agent(self.supplier)
-        machine_set = list(self.machines.keys())
+        machine_set = [k for k, v in self.machines.items() if v['stock'] > 0]
         want_to_scrap = []
         for machine_type in machine_set:
             machine = self.machines[machine_type]['machine']
@@ -280,15 +278,16 @@ class ConsumptionGoodFirm(Firm):
             self.log.info('computing market share')
             self.log.info(f'own competitiveness: {self.competitiveness}')
             self.log.info(f'sector average competitiveness: {sector_avg_comp}')
-        return (
+        ms = (
             self.market_share
             * (1 + self.model.replicator_dynamics_coeff[0]
                * (self.competitiveness - sector_avg_comp)
                / sector_avg_comp)
         )
+        return d(max(0, ms))
 
     def compute_demand(self):  # TODO: should be dependant on price?
-        return self.model.consumption * self.market_share
+        return self.model.consumption * self.market_share  # / self.price
 
     def compute_labour_availability(self):
         return self.market_share * (
@@ -296,7 +295,7 @@ class ConsumptionGoodFirm(Firm):
         )
 
     def fix_production(self):
-        labour_res = self.model.labour_supply - self.model.capital_labour_demand
+        labour_res = self.compute_labour_availability()
         max_q = labour_res * self.average_productivity
         production = min(max_q, self.planned_production)
         ce_q, de_q = self.finance_operations(production, self.unit_production_cost)
@@ -309,7 +308,13 @@ class ConsumptionGoodFirm(Firm):
         return min(self.demand, self.output)
 
     def compute_inventory(self):
-        return self.output - self.sales
+        inventory = self.output - self.sales
+        # deprecate inventory
+        if inventory > 0:
+            inventory = (
+                int(inventory * (1 - self.model.inventory_deprecation))
+            )
+        return inventory
 
     def compute_profit(self):
         revenue = self.price * self.sales
@@ -321,7 +326,9 @@ class ConsumptionGoodFirm(Firm):
         return self.liquid_assets + self.profit - self.capital_employed
 
     def reimburse_investment(self, received_orders):
-        self.liquid_assets += received_orders * self.model.schedule.get_agent(self.supplier).price
+        self.liquid_assets += (
+            received_orders * self.model.schedule.get_agent(self.supplier).price
+        )
         if received_orders < self.expansion_investment:
             self.expansion_investment = received_orders
             self.replacement_investment = 0
@@ -332,7 +339,9 @@ class ConsumptionGoodFirm(Firm):
         supplier = self.model.schedule.get_agent(self.supplier)
         if supplier.output < supplier.demand:
             # TODO: assign residual orders to firms
-            received_orders = int(self.investment / supplier.orders * supplier.output)
+            received_orders = (
+                int(d(self.investment / supplier.orders) * supplier.output)
+            )
             self.reimburse_investment(received_orders)
         new_machines = self.expansion_investment
         for machine_type in self.want_to_scrap:
@@ -434,7 +443,7 @@ class ConsumptionGoodFirm(Firm):
 
         self.market_share = self.compute_market_share()
         self.demand = self.compute_demand()
-        self.production = self.fix_production()
+        self.production = self.fix_production()  # need to adjust labour demand here
         self.output = self.production + self.inventory
         self.sales = self.compute_sales()
         self.inventory = self.compute_inventory()
@@ -553,7 +562,8 @@ class CapitalGoodFirm(Firm):
         )
 
     def compute_debt_availability(self):
-        return self.model.max_debt_sales_ratio * self.sales - self.debt_stock
+        max_debt = self.model.max_debt_sales_ratio * self.sales
+        return max(0, max_debt - self.debt_stock)
 
     def compute_demand(self):
         # consumption_firms = self.model.get_group('consumption_firm')
@@ -586,14 +596,14 @@ class CapitalGoodFirm(Firm):
     def compute_market_share(self):
         investment = self.model.investment
         market_share = (
-            self.demand / investment if investment > 0 else self.market_share
+            d(self.demand / investment) if investment > 0 else self.market_share
         )
         return market_share
 
     def innovate(self):
         if not self.model.innovation:
             return None
-        epsilon = d(self.random.uniform(-.5, .5))
+        epsilon = d(self.random.uniform(*self.model.distribution_bounds))
         new_lpc = (
             self.machine.labour_productivity_coefficient
             * (1 + epsilon)

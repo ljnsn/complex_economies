@@ -12,6 +12,24 @@ from complex_economies.utils import messages
 from complex_economies.utils.misc import d
 
 
+def gov_base_consumption(model):
+    government_consumption = (
+        d(model.wage_share) * model.market_wage * model.labour_supply
+    )
+    return government_consumption
+
+
+def gov_welfare_consumption(model):
+    government_consumption = model.wage_share * model.unemployment
+    return government_consumption
+
+
+social_policy = {
+    'base': gov_base_consumption,
+    'welfare': gov_welfare_consumption
+}
+
+
 def compute_gdp(model):
     consumption_firms = model.get_group('consumption_firm')
     capital_firms = model.get_group('capital_firm')
@@ -45,7 +63,7 @@ class ComplexEconomy(Model):
         ],
         'stage_four': [
             'aggregate_production',
-            'aggregate_inventories',
+            'aggregate_inventories'
         ],
         'stage_five': [
             'exit_and_entry'
@@ -56,7 +74,7 @@ class ComplexEconomy(Model):
     avg_comp_competitiveness = d(0)
     avg_cap_competitiveness = d(0)
     average_unit_labour_cost = d(0)
-    labour_demand = d(0)
+    consumption_labour_demand = d(0)
     unemployment = d(0)
     delta_cpi = d(0)
     delta_productivity = d(0)
@@ -148,7 +166,7 @@ class ComplexEconomy(Model):
         self.social_policy = parameters['social_policy']
         self.inventory_deprecation = parameters['inventory_deprecation']
 
-        # parameters
+        # parameters  # TODO: convert parameters to decimal
         n_consumption_firms = parameters['n_consumption_firms']
         n_capital_firms = parameters['n_capital_firms']
         self.replicator_dynamics_coeff = parameters['replicator_dynamics_coeff']
@@ -167,27 +185,27 @@ class ComplexEconomy(Model):
         self.max_debt_sales_ratio = parameters['max_debt_sales_ratio']
 
         # initial conditions
-        self.market_wage = market_wage
-        self.cpi = cpi
-        self.avg_labour_prod = avg_labour_productivity
+        self.market_wage = d(market_wage)
+        self.cpi = d(cpi)
+        self.avg_labour_prod = d(avg_labour_productivity)
         self.labour_supply = labour_supply
 
-        # computed
-        self.max_capital_labour_share = (
+        # computed and derived
+        self.max_capital_labour_share = d(
             n_capital_firms / (n_consumption_firms + n_capital_firms)
         )
-        init_market_share = (1 / n_consumption_firms, 1 / n_capital_firms)
+        init_market_share = (d(1 / n_consumption_firms), d(1 / n_capital_firms))
         self.employment = labour_supply
         self.consumption = self.compute_consumption()
-        self.unemployment_rate = self.unemployment / self.employment
+        self.unemployment_rate = d(self.unemployment / self.employment)
 
         # create capital good firms
-        for i in range(int(n_capital_firms)):
+        for i in range(n_capital_firms):
             f = CapitalGoodFirm(i, self, liquid_assets, init_market_share[1])
             self.schedule.add(f)
         # create consumption good firms
         supplier = 0
-        for i in range(int(n_consumption_firms)):
+        for i in range(n_consumption_firms):
             if parameters['fix_supplier']:
                 if i % 4 == 0 and i != 0:
                     supplier += 1
@@ -227,13 +245,21 @@ class ComplexEconomy(Model):
     def capital_labour_demand(self):
         capital_firms = self.get_group('capital_firm')
         return sum([a.labour_demand for a in capital_firms])
+    
+    @property
+    def labour_demand(self):
+        return self.capital_labour_demand + self.consumption_labour_demand
 
-    def get_group(self, group, include_bankrupt=False):
+    def get_group(self, group, include_bankrupt=False, bankrupt_only=False):
+        if include_bankrupt and bankrupt_only:
+            raise ValueError('include_bankrupt and bankrupt_only are mutually exclusive')
         firms = [
             a for a in self.schedule.agents if a.group == group
         ]
         if include_bankrupt:
             return firms
+        elif bankrupt_only:
+            return [f for f in firms if f.bankrupt]
         return [f for f in firms if not f.bankrupt]
 
     def compute_average_price(self, group, weighted=False):
@@ -249,18 +275,26 @@ class ComplexEconomy(Model):
         self.cpi = cpi
         self.avg_cap_price = self.compute_average_price('capital_firm')
 
-    def update_avg_ulc(self):
+    def update_avg_ulc(self):  # currently not used
         capital_firms = self.get_group('capital_firm')
         lpcs = [a.machine.compute_unit_labour_cost(self) for a in capital_firms]
         self.average_unit_labour_cost = sum(lpcs) / len(lpcs)
 
-    def update_average_labour_productivity(self):
+    def update_average_labour_productivity(self, weighted=True):
         firms = self.get_group('capital_firm')
-        avg_labour_prod = (
-            sum([f.machine.labour_productivity_coefficient for f in firms])
-            / len(firms)
+        if weighted:
+            avg_labour_prod = sum([
+                firm.market_share * firm.machine.labour_productivity_coefficient
+                for firm in firms
+            ])
+        else:
+            avg_labour_prod = (
+                sum([f.machine.labour_productivity_coefficient for f in firms])
+                / len(firms)
+            )
+        self.delta_productivity = (
+            (avg_labour_prod - self.avg_labour_prod) / self.avg_labour_prod
         )
-        self.delta_productivity = (avg_labour_prod - self.avg_labour_prod) / self.avg_labour_prod
         self.avg_labour_prod = avg_labour_prod
 
     def compute_sector_competitiveness(self, group):
@@ -289,14 +323,14 @@ class ComplexEconomy(Model):
         )
 
     def aggregate_labour_demand(self):
-        self.labour_demand = sum([
-            a.labour_demand for a in self.schedule.agents
+        self.consumption_labour_demand = sum([
+            a.labour_demand for a in self.get_group('consumption_firm')
         ])
 
     def update_employment(self):
         self.employment = min(self.labour_demand, self.labour_supply)
         self.unemployment = max(0, self.labour_supply - self.employment)
-        unemployment_rate = self.unemployment / self.labour_supply
+        unemployment_rate = d(self.unemployment / self.labour_supply)
         delta_unemployment = unemployment_rate - self.unemployment_rate
         self.unemployment_rate = unemployment_rate
         self.delta_unemployment = delta_unemployment
@@ -306,22 +340,18 @@ class ComplexEconomy(Model):
         psi2 = self.wage_setting['avg_lp_weight']
         psi3 = self.wage_setting['unemployment_weight']
         self.market_wage = (
-            self.market_wage * (  # NOTE: in the paper, this is +
-                1 + psi1 * self.delta_cpi
-                + psi2 * self.delta_productivity
-                + psi3 * self.delta_unemployment
+            self.market_wage + (  # NOTE: in the paper, this is +
+                1 + d(psi1) * self.delta_cpi
+                + d(psi2) * self.delta_productivity
+                + d(psi3) * self.delta_unemployment
             )
         )
 
     def compute_consumption(self):
         household_consumption = self.market_wage * self.employment
-        if self.social_policy == 'welfare':
-            government_consumption = self.wage_share * self.unemployment
-        else:
-            government_consumption = (
-                self.wage_share * self.market_wage * self.labour_supply
-            )
-        return household_consumption + government_consumption
+        policy_func = social_policy.get(self.social_policy)
+        gov_consumption = policy_func(self)
+        return household_consumption + gov_consumption
 
     def update_consumption(self):
         self.consumption = self.compute_consumption()
@@ -338,8 +368,8 @@ class ComplexEconomy(Model):
             f.inventory for f in firms
         ])
 
-    def exit_and_entry(self):  # TODO: adjust market share after re-entry
-        for group in self.groups:
+    def exit_and_entry(self):
+        for group in self.groups:  # TODO: move setting bankrupt to firms
             self.log.info(f'entry and exit for group {group}')
             firms = self.get_group(group)
             dead_firms = [
@@ -356,21 +386,35 @@ class ComplexEconomy(Model):
                 next_id = max([a.unique_id for a in self.schedule.agents]) + 1
                 assets = copy_firm.liquid_assets
                 market_share = copy_firm.market_share
-                capital_stock = copy_firm.capital_stock if group == 'consumption_firm' else None
+                capital_stock = (
+                    copy_firm.capital_stock if group == 'consumption_firm'
+                    else None
+                )
                 constructor = {
                     'consumption_firm': ConsumptionGoodFirm,
                     'capital_firm': CapitalGoodFirm
                 }.get(group)
                 new_firm = constructor(
-                    next_id, self, assets,
+                    int(next_id), self, assets,
                     market_share=market_share, capital_stock=capital_stock
                 )
                 if group == 'capital_firm':
-                    new_firm.machine.labour_productivity_coefficient = copy_firm.machine.labour_productivity_coefficient
+                    new_firm.machine.labour_productivity_coefficient = (
+                        copy_firm.machine.labour_productivity_coefficient
+                    )
                     new_firm.machine.price = copy_firm.machine.price
                 self.schedule.add(new_firm)
+            self._calibrate_market_share(group)
 
-    def distribute_leftover_machines(self):
+    def _calibrate_market_share(self, group):
+        # TODO: adjust market share after re-entry
+        firms = self.get_group(group)
+        market_shares_sum = [f.market_share for f in firms]
+        if market_shares_sum != 1:
+            for firm in firms:
+                firm.market_share = firm.market_share / sum(market_shares_sum)
+
+    def _distribute_leftover_machines(self):
         pass
 
     def step(self):
