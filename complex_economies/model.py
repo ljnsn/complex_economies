@@ -170,20 +170,28 @@ class ComplexEconomy(Model):
         # parameters  # TODO: convert parameters to decimal
         n_consumption_firms = parameters['n_consumption_firms']
         n_capital_firms = parameters['n_capital_firms']
-        self.replicator_dynamics_coeff = parameters['replicator_dynamics_coeff']
-        self.competitiveness_weights = parameters['competitiveness_weights']
+        replicators = parameters['replicator_dynamics_coeff']
+        self.replicator_dynamics_coeff = (d(replicators[0]), d(replicators[1]))
+        comp_weights = parameters['competitiveness_weights']
+        self.competitiveness_weights = (
+            (d(comp_weights[0][0]), d(comp_weights[0][1])),
+            (d(comp_weights[1][0]), d(comp_weights[1][1]))
+        )
         self.distribution_bounds = parameters['distribution_bounds']
-        self.labour_supply_growth = parameters['labour_supply_growth']
-        self.wage_setting = parameters['wage_setting']
-        self.desired_capital_utilization = parameters['desired_capital_utilization']
-        self.trigger_rule = parameters['trigger_rule']
-        self.payback_period_parameter = parameters['payback_period_parameter']
-        self.mark_up = parameters['mark_up']
-        self.interest_rate = parameters['interest_rate']
-        self.wage_share = parameters['wage_share']
-        self.betas = parameters['betas']
+        self.labour_supply_growth = d(parameters['labour_supply_growth'])
+        self.wage_setting = {
+            k: d(v) for k, v in
+            parameters['wage_setting'].items()
+        }
+        self.desired_capital_utilization = d(parameters['desired_capital_utilization'])
+        self.trigger_rule = d(parameters['trigger_rule'])
+        self.payback_period_parameter = d(parameters['payback_period_parameter'])
+        self.mark_up = d(parameters['mark_up'])
+        self.interest_rate = d(parameters['interest_rate'])
+        self.wage_share = d(parameters['wage_share'])
+        self.betas = [d(b) for b in parameters['betas']]
         # NOTE: max_debt_sales_ratio is not specified in the paper
-        self.max_debt_sales_ratio = parameters['max_debt_sales_ratio']
+        self.max_debt_sales_ratio = d(parameters['max_debt_sales_ratio'])
 
         # initial conditions
         self.market_wage = d(market_wage)
@@ -342,9 +350,9 @@ class ComplexEconomy(Model):
         psi3 = self.wage_setting['unemployment_weight']
         self.market_wage = (
             self.market_wage + (  # NOTE: in the paper, this is +
-                1 + d(psi1) * self.delta_cpi
-                + d(psi2) * self.delta_productivity
-                + d(psi3) * self.delta_unemployment
+                1 + psi1 * self.delta_cpi
+                + psi2 * self.delta_productivity
+                + psi3 * self.delta_unemployment
             )
         )
 
