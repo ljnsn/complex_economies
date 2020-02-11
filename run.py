@@ -1,5 +1,5 @@
 
-from complex_economies.server import server
+from complex_economies.app import server
 
 
-server.launch()
+server.launch(debug=True)
