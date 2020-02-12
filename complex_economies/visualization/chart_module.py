@@ -52,9 +52,32 @@ class ChartModule:
         self.canvas_height = canvas_height
         self.canvas_width = canvas_width
         self.data_collector_name = data_collector_name
+        
+    def render_figure(self):
+        
+        layout = dict(
+            title=self.title,
+            # height=self.canvas_height,
+            # width=self.canvas_width
+        )
+
+        data = []
+        for s in self.series:
+            trace = dict(
+                name=s['Label'],
+                type="scatter",
+                y=[],
+                line={"color": s["Color"]},
+                # hoverinfo="skip",
+                mode="lines",
+            )
+            data.append(trace)
+
+        return dict(data=data, layout=layout)
 
     def render(self, model):
-        current_values = []
+
+        current_values = {}
         data_collector = getattr(model, self.data_collector_name)
 
         for s in self.series:
@@ -63,5 +86,5 @@ class ChartModule:
                 val = data_collector.model_vars[name][-1]  # Latest value
             except (IndexError, KeyError):
                 val = 0
-            current_values.append(val)
+            current_values[name] = val
         return current_values
