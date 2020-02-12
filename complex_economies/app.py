@@ -82,7 +82,7 @@ model_params = {
 }
 
 # map data to chart in the ChartModule
-chart_1 = ChartModule([
+chart_1 = ChartModule(title='Chart1', series=[
     {"Label": "gdp", "Color": gdp_colour},
     {"Label": "consumption", "Color": consumption_colour},
     {"Label": "production", "Color": production_colour},
@@ -90,14 +90,14 @@ chart_1 = ChartModule([
     {"Label": "inventories", "Color": inventories_colour}
 ])
 
-chart_2 = ChartModule([
+chart_2 = ChartModule(title='Chart2', series=[
     {"Label": "labour_supply", "Color": gdp_colour},
     {"Label": "labour_demand", "Color": consumption_colour},
     {"Label": "employment", "Color": production_colour},
     {"Label": "unemployment", "Color": investment_colour}
 ])
 
-chart_3 = ChartModule([
+chart_3 = ChartModule(title='Chart3', series=[
     {"Label": "avg_comp_competitiveness", "Color": gdp_colour},
     {"Label": "avg_cap_competitiveness", "Color": consumption_colour},
     {"Label": "market_wage", "Color": production_colour}
