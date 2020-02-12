@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime as dt
+import logging
 
 import dash
 import dash_core_components as dcc
@@ -62,24 +63,24 @@ def make_params(user_settable_params):
 
 def make_figure(module):
     return html.Div([
-        html.Div([
-            html.H6(module.title, className='fig_title')
-        ]),
+        # html.Div([
+        #     html.H6(module.title, className='fig_title')
+        # ]),
         dcc.Graph(
-            id=module.title,
-            figure=dict()
+            id=module.title.lower().replace(' ', '-'),
+            figure=module.render_figure()
         )
     ], className='figure-div')
 
 
 def make_figures(chart_modules):
     if not chart_modules:
-        return html.Div(className='figures-container')
+        return html.Div(id='figures-div', className='figures-container')
     charts = []
     for module in chart_modules:
         chart = make_figure(module)
         charts.append(chart)
-    return html.Div(charts, className='figures-container')
+    return html.Div(charts, id='figures-div', className='figures-container')
 
 
 def make_layout(title, description, chart_modules, user_settable_params, interval):
@@ -148,7 +149,8 @@ class ModularApp:
         model_params = {}
         for key, val in self.model_kwargs.items():
             if isinstance(val, UserParam):
-                if val.param_type == 'static_text':    # static_text is never used for setting params
+                if val.param_type == 'static_text':
+                    # static_text is never used for setting params
                     continue
                 model_params[key] = val.value
             else:
@@ -169,7 +171,7 @@ class ModularApp:
         return visualization_state
 
     def run_model(self):
-        
+
         @self.app.callback(
             Output('step-counter', 'children'),
             [Input('step-button', 'n_clicks_timestamp'),
@@ -188,7 +190,7 @@ class ModularApp:
                 self.model.step()
                 return current_step + 1
             return current_step
-        
+
         @self.app.callback(
             [Output('start-stop-button', 'children'),
              Output('run-interval', 'disabled')],
@@ -200,15 +202,21 @@ class ModularApp:
                 return 'Stop', False
             self.model.running = False
             return 'Start', True
-    
-        for element in self.visualization_elements:
-            @self.app.callback(
-                Output(element.title, 'figure'),
-                Input('step-counter', 'children')
-            )
-            def update_figure(counter):
-                if counter > 0:
-                    pass
+
+        @self.app.callback(
+            Output('figures-div', 'children'),
+            [Input('step-counter', 'children')],
+            [State('figures-div', 'children')]
+        )
+        def update_figure(counter, figures):
+            if counter > 0:
+                for element, fig_obj in zip(self.visualization_elements, figures):
+                    figure = fig_obj['props']['children'][0]['props']['figure']
+                    data = element.render(self.model)
+                    traces = figure['data']
+                    for i, trace in enumerate(traces):
+                        figure['data'][i]['y'].append(data[trace['name']])
+            return figures
 
     def launch(self, port=None, debug=False):
         """ Run the app. """
