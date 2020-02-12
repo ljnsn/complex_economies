@@ -19,9 +19,24 @@ def make_header(title, description=''):
 
 def make_controls(interval):
     return html.Div([
-        html.Button('Start', id='start-stop-button', n_clicks=0, n_clicks_timestamp=-1),
-        html.Button('Step', id='step-button', n_clicks=0, n_clicks_timestamp=-1),
-        html.Button('Reset', id='reset-button', n_clicks=0, n_clicks_timestamp=-1),
+        html.Button(
+            'Start',
+            id='start-stop-button',
+            n_clicks=0,
+            n_clicks_timestamp=-1
+        ),
+        html.Button(
+            'Step',
+            id='step-button',
+            n_clicks=0,
+            n_clicks_timestamp=-1
+        ),
+        html.Button(
+            'Reset',
+            id='reset-button',
+            n_clicks=0,
+            n_clicks_timestamp=-1
+        ),
         html.Div([
             html.Label('Step Counter'),
             html.P(0, id='step-counter')
