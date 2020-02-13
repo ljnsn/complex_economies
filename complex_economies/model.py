@@ -276,7 +276,7 @@ class ComplexEconomy(Model):
         if include_bankrupt and bankrupt_only:
             raise ValueError('include_bankrupt and bankrupt_only are mutually exclusive')
         firms = [
-            a for a in self.schedule.agents if a.group == group
+            a for a in self.schedule.agent_buffer() if a.group == group
         ]
         if include_bankrupt:
             return firms
