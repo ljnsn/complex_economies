@@ -39,6 +39,16 @@ def compute_gdp(model):
     )
 
 
+def get_dead_consumption_firms(model):
+    firms = model.get_group('consumption_firm', bankrupt_only=True)
+    return len(firms)
+
+
+def get_dead_capital_firms(model):
+    firms = model.get_group('capital_firm', bankrupt_only=True)
+    return len(firms)
+
+
 class ComplexEconomy(Model):
 
     log = logging.getLogger(__name__)
@@ -109,7 +119,9 @@ class ComplexEconomy(Model):
                 'unemployment': 'unemployment',
                 'avg_comp_competitiveness': 'avg_comp_competitiveness',
                 'avg_cap_competitiveness': 'avg_cap_competitiveness',
-                'gdp': compute_gdp
+                'gdp': compute_gdp,
+                'bankrupt_consumption': get_dead_consumption_firms,
+                'bankrupt_capital': get_dead_capital_firms
             },
             tables={
                 'consumption_firm': {
