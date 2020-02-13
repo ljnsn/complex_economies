@@ -9,10 +9,6 @@ from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
 
 from .user_param import UserParam
-from ..utils.misc import root
-
-
-assets_url_path = (root / 'assets').resolve()
 
 
 def make_header(title, description=''):
