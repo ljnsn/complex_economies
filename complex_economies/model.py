@@ -14,7 +14,7 @@ from complex_economies.utils.misc import d
 
 def gov_base_consumption(model):
     government_consumption = (
-        d(model.wage_share) * model.market_wage * model.labour_supply
+        model.wage_share * model.market_wage * model.labour_supply
     )
     return government_consumption
 
