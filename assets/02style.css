@@ -1,0 +1,60 @@
+body {
+  background-color: #f2f2f2;
+  margin: 5%;
+}
+
+.row {
+  display: flex;
+  margin: 10px;
+}
+
+.controls-container {
+    margin-left: auto;
+    align-self: flex-end;
+    display: flex;
+}
+
+.controls *, .step-counter-div label, p {
+    display: inline-block;
+    margin: 2px;
+}
+
+.step-counter-div label {
+    height: 38px;
+    padding: 0 30px;
+    color: #555;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 38px;
+    letter-spacing: .1rem;
+    text-transform: uppercase;
+}
+
+.step-counter-div p {
+    color: red;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 38px;
+    letter-spacing: .1rem;
+}
+
+.params-container {
+    display: inline-table;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    margin: 10px;
+    padding: 15px;
+    position: relative;
+    box-shadow: 2px 2px 2px lightgrey;
+}
+
+.figures-container {
+    margin-top: 10px;
+    position: relative;
+    box-shadow: 2px 2px 2px lightgrey;
+}
+
+#app_desc_title {
+    color: red;
+}
