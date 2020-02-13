@@ -73,7 +73,8 @@ class ComplexEconomy(Model):
         ],
         'stage_four': [
             'aggregate_production',
-            'aggregate_inventories'
+            'aggregate_inventories',
+            'aggregate_investment'
         ],
         'stage_five': [
             'exit_and_entry'
