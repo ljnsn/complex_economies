@@ -103,9 +103,13 @@ chart_3 = ChartModule(title='Chart3', series=[
     {"Label": "market_wage", "Color": production_colour}
 ])
 
+
 # create instance of Mesa ModularServer
-server = ModularApp(
-    ComplexEconomy, [chart_1, chart_2, chart_3],
-    "Complex Economy Model",
-    model_params=model_params
-)
+def makeserver(app):
+    server = ModularApp(
+        app,
+        ComplexEconomy, [chart_1, chart_2, chart_3],
+        "Complex Economy Model",
+        model_params=model_params
+    )
+    return server

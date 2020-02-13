@@ -9,56 +9,64 @@ from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
 
 from .user_param import UserParam
+from ..utils.misc import root
+
+
+assets_url_path = (root / 'assets').resolve()
 
 
 def make_header(title, description=''):
     return html.Div([
-        html.H4(title, className='app_desc_title'),
-        html.P(description, className='app_desc_text')
+        html.H4(title, id='app_desc_title'),
+        html.P(description, id='app_desc_text')
     ], className='app_desc')
 
 
 def make_controls(interval):
     return html.Div([
-        html.Button(
-            'Start',
-            id='start-stop-button',
-            n_clicks=0,
-            n_clicks_timestamp=-1
-        ),
-        html.Button(
-            'Step',
-            id='step-button',
-            n_clicks=0,
-            n_clicks_timestamp=-1
-        ),
-        html.Button(
-            'Reset',
-            id='reset-button',
-            n_clicks=0,
-            n_clicks_timestamp=-1
-        ),
         html.Div([
-            html.Label('Step Counter'),
-            html.P(0, id='step-counter')
-        ]),
-        dcc.Interval(
-            id='run-interval',
-            interval=interval,
-            n_intervals=0,
-            disabled=True
-        )
-    ])
+            html.Button(
+                'Start',
+                id='start-stop-button',
+                n_clicks=0,
+                n_clicks_timestamp=-1
+            ),
+            html.Button(
+                'Step',
+                id='step-button',
+                n_clicks=0,
+                n_clicks_timestamp=-1
+            ),
+            html.Button(
+                'Reset',
+                id='reset-button',
+                n_clicks=0,
+                n_clicks_timestamp=-1
+            ),
+        ], className='controls'),
+        html.Div([
+            html.Div([
+                html.Label('Step Counter', id='step-counter-label'),
+                html.P(0, id='step-counter')
+            ]),
+            dcc.Interval(
+                id='run-interval',
+                interval=interval,
+                n_intervals=0,
+                disabled=True
+            )
+        ], className='step-counter-div')
+    ], className='controls-container')
 
 
 def make_params(user_settable_params):
     if not user_settable_params:
-        return html.Div(className='params-container')
+        return html.Div()
     params = []
     for param in user_settable_params:
         element = param.render()
         params.append(element)
-    return html.Div(params, className='params-container')
+    return html.Div(params, className='four columns params-container')
 
 
 def make_figure(module):
@@ -75,40 +83,41 @@ def make_figure(module):
 
 def make_figures(chart_modules):
     if not chart_modules:
-        return html.Div(id='figures-div', className='figures-container')
+        return html.Div(id='figures-div', className='eight columns figures-container')
     charts = []
     for module in chart_modules:
         chart = make_figure(module)
         charts.append(chart)
-    return html.Div(charts, id='figures-div', className='figures-container')
+    return html.Div(charts, id='figures-div', className='eight columns figures-container')
 
 
 def make_layout(title, description, chart_modules, user_settable_params, interval):
     return html.Div([
-        make_header(title, description),
-        make_controls(interval),
-        make_params(user_settable_params),
-        make_figures(chart_modules)
+        html.Div([
+            make_header(title, description),
+            make_controls(interval)
+        ], className='row'),
+        html.Div([
+            make_params(user_settable_params),
+            make_figures(chart_modules)
+        ], className='row')
     ])
 
 
 class ModularApp:
     
-    app = dash.Dash(
-        __name__,
-        meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
-        # suppress_callback_exceptions=True
-    )
-    server = app.server
     ip = '127.0.0.1'
     port = 8251
     model = None
     fps = 40
     last_update = -1
 
-    def __init__(self, model_cls, visualization_elements, name="Mesa Model",
+    def __init__(self, app, model_cls, visualization_elements, name="Mesa Model",
                  model_params={}):
         """ Create a new visualization server with the given elements. """
+        self.app = app
+        self.server = self.app.server
+        
         # Prep visualization elements:
         self.visualization_elements = visualization_elements
         # Initializing the model
@@ -145,7 +154,7 @@ class ModularApp:
 
     def reset_model(self):
         """ Reinstantiate the model object, using the current parameters. """
-
+        # TODO: reset figures as well
         model_params = {}
         for key, val in self.model_kwargs.items():
             if isinstance(val, UserParam):
