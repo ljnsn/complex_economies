@@ -23,7 +23,7 @@ benchmark_parameters = {
     'n_capital_firms': 50,
     'replicator_dynamics_coeff': (-.5, -.5),
     'competitiveness_weights': ((1, 1), (1, 1)),
-    'distribution_bounds': (-.5, .5),
+    'distribution_bounds': (-.5, .5),  # labour prod seems to increase way too fast
     'labour_supply_growth': .01,  # .01
     'wage_setting': {
         'cpi_weight': 0.75,  # .75
