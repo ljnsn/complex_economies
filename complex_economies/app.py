@@ -21,7 +21,7 @@ benchmark_parameters = {
     'n_capital_firms': 50,
     'replicator_dynamics_coeff': (-.5, -.5),
     'competitiveness_weights': ((1, 1), (1, 1)),
-    'distribution_bounds': (-.5, .5),  # labour prod seems to increase way too fast
+    'distribution_bounds': (-.05, .05),  # labour prod seems to increase way too fast
     'labour_supply_growth': .01,  # .01
     'wage_setting': {
         'cpi_weight': 0.75,  # .75
@@ -41,6 +41,7 @@ benchmark_parameters = {
     'social_policy': 'base',  # at the moment, 'base' and 'welfare' are possible
     'inventory_deprecation': 0,
     'fix_supplier': True,
+    # TODO: add supplier subset as param
 }
 
 # dictionary of user settable parameters - these map to the model __init__ parameters
@@ -102,6 +103,7 @@ chart_3 = ChartModule(title='Chart3', series=[
     {"Label": "avg_cap_competitiveness", "Color": consumption_colour},
     {"Label": "market_wage", "Color": production_colour}
 ])
+# TODO: plot prices and debt_stock / liquidity
 
 
 # create instance of Mesa ModularServer

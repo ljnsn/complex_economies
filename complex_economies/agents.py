@@ -338,7 +338,7 @@ class ConsumptionGoodFirm(Firm):
     def replace_and_add_machines(self):  # TODO: add logging
         supplier = self.model.schedule.get_agent(self.supplier)
         if supplier.output < supplier.demand:
-            # TODO: assign residual orders to firms
+            # assign residual orders to firms
             received_orders = (
                 int(d(self.investment / supplier.orders) * supplier.output)
             )
