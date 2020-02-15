@@ -211,7 +211,7 @@ class ConsumptionGoodFirm(Firm):
             planned_ei = trigger_level - self.capital_stock
         return planned_ei
 
-    def choose_supplier(self, subset=10):
+    def choose_supplier(self, subset=5):
         # NOTE: in the paper, supplier is chosen based on market share
         current_supplier = self.model.schedule.get_agent(self.supplier, _raise=False)
         capital_firms = self.model.get_group('capital_firm')
