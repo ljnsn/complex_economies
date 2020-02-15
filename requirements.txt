@@ -1,3 +1,5 @@
+dash
+gunicorn
 matplotlib
 mesa
 pandas
