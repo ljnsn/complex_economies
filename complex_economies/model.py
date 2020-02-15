@@ -390,6 +390,30 @@ class ComplexEconomy(Model):
             f.inventory for f in firms
         ])
 
+    def make_new_firm(self, group, alive_firms):
+        copy_firm = self.random.choice(alive_firms)
+        next_id = max([a.unique_id for a in self.schedule.agents]) + 1
+        assets = copy_firm.liquid_assets
+        market_share = copy_firm.market_share
+        capital_stock = (
+            copy_firm.capital_stock if group == 'consumption_firm'
+            else None
+        )
+        constructor = {
+            'consumption_firm': ConsumptionGoodFirm,
+            'capital_firm': CapitalGoodFirm
+        }.get(group)
+        new_firm = constructor(
+            int(next_id), self, assets,
+            market_share=market_share, capital_stock=capital_stock
+        )
+        if group == 'capital_firm':
+            new_firm.machine.labour_productivity_coefficient = (
+                copy_firm.machine.labour_productivity_coefficient
+            )
+            new_firm.machine.price = copy_firm.machine.price
+        return new_firm
+
     def exit_and_entry(self):
         for group in self.groups:  # TODO: move setting bankrupt to firms
             self.log.info(f'entry and exit for group {group}')
@@ -398,33 +422,14 @@ class ComplexEconomy(Model):
                 f for f in firms
                 if f.market_share <= 0 or f.liquid_assets < 0
             ]
-            self.log.info(f'Bankrupt firms: {len(dead_firms)}')
-            alive_firms = [
-                f for f in firms if f not in dead_firms
-            ]
+            n_dead_firms = len(dead_firms)
             for firm in dead_firms:
-                firm.bankrupt = True
-                copy_firm = self.random.choice(alive_firms)
-                next_id = max([a.unique_id for a in self.schedule.agents]) + 1
-                assets = copy_firm.liquid_assets
-                market_share = copy_firm.market_share
-                capital_stock = (
-                    copy_firm.capital_stock if group == 'consumption_firm'
-                    else None
-                )
-                constructor = {
-                    'consumption_firm': ConsumptionGoodFirm,
-                    'capital_firm': CapitalGoodFirm
-                }.get(group)
-                new_firm = constructor(
-                    int(next_id), self, assets,
-                    market_share=market_share, capital_stock=capital_stock
-                )
-                if group == 'capital_firm':
-                    new_firm.machine.labour_productivity_coefficient = (
-                        copy_firm.machine.labour_productivity_coefficient
-                    )
-                    new_firm.machine.price = copy_firm.machine.price
+                self.schedule.remove(firm)
+            self.log.info(f'Bankrupt firms: {len(dead_firms)}')
+            alive_firms = self.get_group(group)
+            for i in range(n_dead_firms):
+                # firm.bankrupt = True
+                new_firm = self.make_new_firm(group, alive_firms)
                 self.schedule.add(new_firm)
             self._calibrate_market_share(group)
 
