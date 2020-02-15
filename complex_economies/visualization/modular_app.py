@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime as dt
 import logging
+import os
 
 import dash
 import dash_core_components as dcc
@@ -9,6 +10,11 @@ from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
 
 from .user_param import UserParam
+
+
+port = os.getenv('PORT')
+if port is None or port == '':
+    port = 8251
 
 
 def make_header(title, description=''):
@@ -103,13 +109,13 @@ def make_layout(title, description, chart_modules, user_settable_params, interva
 class ModularApp:
     
     ip = '127.0.0.1'
-    port = 8251
+    port = port
     model = None
     fps = 40
     last_update = -1
 
     def __init__(self, app, model_cls, visualization_elements, name="Mesa Model",
-                 model_params={}):
+                 model_params=None):
         """ Create a new visualization server with the given elements. """
         self.app = app
         self.server = self.app.server
@@ -126,7 +132,7 @@ class ModularApp:
             self.description = model_cls.__doc__
         self.last_update = self.get_current_time()
 
-        self.model_kwargs = model_params
+        self.model_kwargs = model_params if model_params else {}
         self.user_params = [
             val for param, val in model_params.items()
             if isinstance(val, UserParam)
@@ -139,6 +145,7 @@ class ModularApp:
             self.user_params,
             60 / self.fps * 1000
         )
+        self.register_callbacks()
     
     @staticmethod
     def get_current_time():
@@ -175,7 +182,7 @@ class ModularApp:
             visualization_state.append(element_state)
         return visualization_state
 
-    def run_model(self):
+    def register_callbacks(self):
 
         @self.app.callback(
             Output('step-counter', 'children'),
@@ -213,7 +220,7 @@ class ModularApp:
             [Input('step-counter', 'children')],
             [State('figures-div', 'children')]
         )
-        def update_figure(counter, figures):
+        def update_figures(counter, figures):
             if counter > 0:
                 for element, fig_obj in zip(self.visualization_elements, figures):
                     figure = fig_obj['props']['children'][0]['props']['figure']
@@ -227,5 +234,5 @@ class ModularApp:
         """ Run the app. """
         if port is not None:
             self.port = port
-        self.run_model()
-        self.app.run_server(host=self.ip, port=self.port, debug=debug)
+        self.register_callbacks()
+        self.app.run_server(port=self.port, debug=debug)
