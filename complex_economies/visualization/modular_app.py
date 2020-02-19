@@ -107,19 +107,20 @@ def make_layout(title, description, chart_modules, user_settable_params, interva
 
 
 class ModularApp:
-    
+
     ip = '127.0.0.1'
     port = port
     model = None
     fps = 40
     last_update = -1
+    reset_me = False
 
     def __init__(self, app, model_cls, visualization_elements, name="Mesa Model",
                  model_params=None):
         """ Create a new visualization server with the given elements. """
         self.app = app
         self.server = self.app.server
-        
+
         # Prep visualization elements:
         self.visualization_elements = visualization_elements
         # Initializing the model
@@ -146,11 +147,11 @@ class ModularApp:
             60 / self.fps * 1000
         )
         self.register_callbacks()
-    
+
     @staticmethod
     def get_current_time():
         """ Helper function to get the current time in seconds. """
-    
+
         now = dt.datetime.now()
         total_time = (now.hour * 3600) + (now.minute * 60) + (now.second)
         return total_time
@@ -194,6 +195,7 @@ class ModularApp:
         def step_callback(step_ts, reset_ts, n_intervals, current_step):
             if reset_ts > -1 and reset_ts > step_ts and not self.model.running:
                 self.reset_model()
+                self.reset_me = True
                 return 0
             elif step_ts > -1 and step_ts > reset_ts and not self.model.running:
                 self.model.step()
@@ -217,12 +219,20 @@ class ModularApp:
 
         @self.app.callback(
             Output('figures-div', 'children'),
-            [Input('step-counter', 'children')],
+            [Input('step-counter', 'children'),
+             Input('reset-button', 'n_clicks')],
             [State('figures-div', 'children')]
         )
-        def update_figures(counter, figures):
-            if counter > 0:
-                for element, fig_obj in zip(self.visualization_elements, figures):
+        def update_figures(counter, reset_clicks, figures):
+            elements = self.visualization_elements
+            if reset_clicks > 0 and self.reset_me:
+                figures = []
+                for element in elements:
+                    figure = make_figure(element)
+                    figures.append(figure)
+                self.reset_me = False
+            elif counter > 0 and counter == self.model.schedule.steps:
+                for element, fig_obj in zip(elements, figures):
                     figure = fig_obj['props']['children'][0]['props']['figure']
                     data = element.render(self.model)
                     traces = figure['data']
