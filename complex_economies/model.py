@@ -267,7 +267,7 @@ class ComplexEconomy(Model):
     def capital_labour_demand(self):
         capital_firms = self.get_group('capital_firm')
         return sum([a.labour_demand for a in capital_firms])
-    
+
     @property
     def labour_demand(self):
         return self.capital_labour_demand + self.consumption_labour_demand
@@ -434,14 +434,16 @@ class ComplexEconomy(Model):
             self._calibrate_market_share(group)
 
     def _calibrate_market_share(self, group):
-        # TODO: adjust market share after re-entry
+        # adjust market share after re-entry
         firms = self.get_group(group)
         market_shares_sum = [f.market_share for f in firms]
         if market_shares_sum != 1:
+            logging.info('Re-calibrating market share')
             for firm in firms:
                 firm.market_share = firm.market_share / sum(market_shares_sum)
 
     def _distribute_leftover_machines(self):
+        # TODO: finish
         pass
 
     def step(self):
