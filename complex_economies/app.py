@@ -2,6 +2,7 @@
 # from complex_economies.agents import CapitalGoodFirm, ConsumptionGoodFirm
 from complex_economies.visualization import ChartModule, ModularApp, UserParam
 from complex_economies.model import ComplexEconomy
+from complex_economies.benchmark import benchmark_parameters
 
 
 # Green
@@ -41,10 +42,10 @@ init_conditions = {
         "slider", "Labour Supply", 3000, 100, 10000,
         description="Initial labour supply in the economy"
     ),
-    'innovation': UserParam(
-        "checkbox", name="Innovation", value=True,
-        description="Whether there is innovation or not"
-    ),
+    # 'innovation': UserParam(
+    #     "checkbox", name="Innovation", value=True,
+    #     description="Whether there is innovation or not"
+    # ),
 }
 
 model_params = {
