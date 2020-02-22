@@ -6,15 +6,17 @@ from complex_economies.benchmark import benchmark_parameters
 
 
 # Green
-gdp_colour = "#46FF33"
+cGreen = "#46FF33"
 # Red
-consumption_colour = "#FF3C33"
+cRed = "#FF3C33"
 # Blue
-production_colour = "#3349FF"
+cBlue = "#3349FF"
 # Turqoise
-investment_colour = "#00FFFF"
+cTurq = "#00FFFF"
 # Pink
-inventories_colour = "#FF00D3"
+cPink = "#FF00D3"
+# Orange
+cOrange = '#FF8100'
 
 # dictionary of user settable parameters - these map to the model __init__ parameters
 init_conditions = {
@@ -56,33 +58,37 @@ model_params = {
 
 # map data to chart in the ChartModule
 chart_1 = ChartModule(title='Chart1', series=[
-    {"Label": "gdp", "Color": gdp_colour},
-    {"Label": "consumption", "Color": consumption_colour},
-    {"Label": "production", "Color": production_colour},
-    {"Label": "investment", "Color": investment_colour},
-    {"Label": "inventories", "Color": inventories_colour}
+    {"Label": "gdp", "Color": cGreen},
+    {"Label": "consumption", "Color": cRed},
+    {"Label": "production", "Color": cBlue},
+    {"Label": "investment", "Color": cTurq},
+    {"Label": "inventories", "Color": cPink}
 ])
 
 chart_2 = ChartModule(title='Chart2', series=[
-    {"Label": "labour_supply", "Color": gdp_colour},
-    {"Label": "labour_demand", "Color": consumption_colour},
-    {"Label": "employment", "Color": production_colour},
-    {"Label": "unemployment", "Color": investment_colour}
+    {"Label": "labour_supply", "Color": cGreen},
+    {"Label": "labour_demand", "Color": cRed},
+    {"Label": "employment", "Color": cBlue},
+    {"Label": "unemployment", "Color": cTurq}
 ])
 
 chart_3 = ChartModule(title='Chart3', series=[
-    {"Label": "avg_comp_competitiveness", "Color": gdp_colour},
-    {"Label": "avg_cap_competitiveness", "Color": consumption_colour},
-    {"Label": "market_wage", "Color": production_colour}
+    {"Label": "avg_comp_competitiveness", "Color": cGreen},
+    {"Label": "avg_cap_competitiveness", "Color": cRed},
+    {"Label": "market_wage", "Color": cBlue}
 ])
 # TODO: plot prices and debt_stock / liquidity
+chart_4 = ChartModule(title='Chart4', series=[
+    {'Label': 'cpi', 'Color': cGreen},
+    {'Label': 'avg_cap_price', 'Color': cRed}
+])
 
 
 # create instance of Mesa ModularServer
 def makeserver(app):
     mod_app = ModularApp(
         app,
-        ComplexEconomy, [chart_1, chart_2, chart_3],
+        ComplexEconomy, [chart_1, chart_2, chart_3, chart_4],
         "Complex Economy Model",
         model_params=model_params
     )
