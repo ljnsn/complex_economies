@@ -21,7 +21,7 @@ benchmark_parameters = {
     'betas': [.7, .3, 0, 0, .25, 1, .05, .25],
     'max_debt_sales_ratio': 1,  # this is not provided in the paper
     # added by me
-    'innovation': False,
+    'innovation': True,
     'social_policy': 'base',  # at the moment, 'base' and 'welfare' are possible
     'inventory_deprecation': 0,
     'fix_supplier': True,
