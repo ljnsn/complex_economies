@@ -52,11 +52,13 @@ class ChartModule:
         self.canvas_height = canvas_height
         self.canvas_width = canvas_width
         self.data_collector_name = data_collector_name
-        
+
     def render_figure(self):
-        
+
         layout = dict(
             title=self.title,
+            xaxis=dict(rangemode='nonnegative'),
+            yaxis=dict(rangemode='nonnegative')
             # height=self.canvas_height,
             # width=self.canvas_width
         )
