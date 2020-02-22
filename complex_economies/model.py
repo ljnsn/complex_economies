@@ -301,7 +301,7 @@ class ComplexEconomy(Model):
         lpcs = [a.machine.compute_unit_labour_cost(self) for a in capital_firms]
         self.average_unit_labour_cost = sum(lpcs) / len(lpcs)
 
-    def update_average_labour_productivity(self, weighted=True):
+    def update_average_labour_productivity(self, weighted=False):
         firms = self.get_group('capital_firm')
         if weighted:
             avg_labour_prod = sum([
