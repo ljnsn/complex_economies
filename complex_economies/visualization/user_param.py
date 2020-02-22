@@ -6,13 +6,13 @@ from mesa.visualization.UserParam import UserSettableParameter
 
 
 class UserParam(UserSettableParameter):
-    
+
     def render(self):
-        
+
         element = None
-        
+
         if self.param_type == self.NUMBER:
-            
+
             element = dcc.Input(
                 id=self.name,
                 placeholder='Enter a number',
@@ -21,7 +21,7 @@ class UserParam(UserSettableParameter):
             )
 
         elif self.param_type == self.SLIDER:
-            
+
             part = 1
             if self.max_value <= 100:
                 part = 10
@@ -29,7 +29,7 @@ class UserParam(UserSettableParameter):
                 part = 100
             elif self.max_value <= 10000:
                 part = 1000
-            
+
             element = dcc.Slider(
                 id=self.name,
                 min=self.min_value,
@@ -39,11 +39,12 @@ class UserParam(UserSettableParameter):
                 marks={
                     val: {'label': str(val)}
                     for val in range(0, self.max_value + 1, part)
-                }
+                },
+                tooltip={'placement': 'top'}
             )
 
         elif self.param_type == self.CHOICE:
-            
+
             element = dcc.Dropdown(
                 id=self.name,
                 options=[
@@ -54,7 +55,7 @@ class UserParam(UserSettableParameter):
             )
 
         elif self.param_type == self.CHECKBOX:
-            
+
             element = dcc.Checklist(
                 id=self.name,
                 options=[
