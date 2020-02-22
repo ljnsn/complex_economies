@@ -94,7 +94,7 @@ class ConsumptionGoodFirm(Firm):
                 'stock': 40
             } for supplier in capital_firms
         }
-        self.demand = self.market_share * self.model.consumption  # / self.model.cpi
+        self.demand = self.market_share * self.model.consumption / self.model.cpi
         self.production = self.demand
         self.output = self.production
         self.sales = self.output
@@ -287,7 +287,7 @@ class ConsumptionGoodFirm(Firm):
         return d(max(0, ms))
 
     def compute_demand(self):  # TODO: should be dependant on price?
-        return self.model.consumption * self.market_share  # / self.price
+        return self.model.consumption * self.market_share / self.price
 
     def compute_labour_availability(self):
         return self.market_share * (
