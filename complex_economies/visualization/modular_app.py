@@ -20,7 +20,8 @@ if port is None or port == '':
 def make_header(title, description=''):
     return html.Div([
         html.H4(title, id='app_desc_title'),
-        html.P(description, id='app_desc_text')
+        html.P(description, id='app_desc_text'),
+        dcc.Store(id='data-store')
     ], className='app_desc')
 
 
