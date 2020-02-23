@@ -131,10 +131,11 @@ def make_layout(title, description, chart_modules, user_settable_inits,
 
 class ModularApp:
 
+    log = logging.getLogger(__name__)
     ip = '127.0.0.1'
     port = port
     model = None
-    fps = 40
+    fps = 60
     last_update = -1
     reset_me = False
 
@@ -186,7 +187,6 @@ class ModularApp:
 
     def reset_model(self):
         """ Reinstantiate the model object, using the current parameters. """
-        # TODO: reset figures as well
         model_params = {}
         for key, val in self.model_kwargs.items():
             if isinstance(val, UserParam):
