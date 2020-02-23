@@ -62,6 +62,19 @@ def make_controls(interval):
     ], className='controls-container')
 
 
+def make_init_conditions(user_settable_inits):
+    if not user_settable_inits:
+        return html.Div()
+    params = []
+    for param in user_settable_inits:
+        element = param.render()
+        params.append(element)
+    return html.Div([
+        html.H5('Initial Conditions'),
+        html.Div(params, id='init_div')
+    ], className='four columns params-container')
+
+
 def make_params(user_settable_params):
     if not user_settable_params:
         return html.Div()
@@ -69,7 +82,10 @@ def make_params(user_settable_params):
     for param in user_settable_params:
         element = param.render()
         params.append(element)
-    return html.Div(params, className='four columns params-container')
+    return html.Div([
+        html.H5('Parameters'),
+        html.Div(params, id='params_div')
+    ], className='four columns params-container')
 
 
 def make_figure(module):
@@ -86,22 +102,28 @@ def make_figure(module):
 
 def make_figures(chart_modules):
     if not chart_modules:
-        return html.Div(id='figures-div', className='eight columns figures-container')
+        return html.Div(
+            id='figures-div', className='eight columns figures-container'
+        )
     charts = []
     for module in chart_modules:
         chart = make_figure(module)
         charts.append(chart)
-    return html.Div(charts, id='figures-div', className='eight columns figures-container')
+    return html.Div(
+        charts, id='figures-div', className='eight columns figures-container'
+    )
 
 
-def make_layout(title, description, chart_modules, user_settable_params, interval):
+def make_layout(title, description, chart_modules, user_settable_inits,
+                user_params, interval):
     return html.Div([
         html.Div([
             make_header(title, description),
             make_controls(interval)
         ], className='row'),
         html.Div([
-            make_params(user_settable_params),
+            make_init_conditions(user_settable_inits),
+            make_params(user_params),
             make_figures(chart_modules)
         ], className='row')
     ])
@@ -135,15 +157,20 @@ class ModularApp:
         self.last_update = self.get_current_time()
 
         self.model_kwargs = model_params if model_params else {}
+        self.init_conditions = [
+            val for param, val in model_params.items()
+            if isinstance(val, UserParam) and val.kind == 'initial_condition'
+        ]
         self.user_params = [
             val for param, val in model_params.items()
-            if isinstance(val, UserParam)
+            if isinstance(val, UserParam) and val.kind == 'parameter'
         ]
         self.reset_model()
         self.app.layout = make_layout(
             self.model_name,
             self.description,
             self.visualization_elements,
+            self.init_conditions,
             self.user_params,
             60 / self.fps * 1000
         )
