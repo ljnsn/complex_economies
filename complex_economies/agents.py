@@ -286,7 +286,7 @@ class ConsumptionGoodFirm(Firm):
         )
         return d(max(0, ms))
 
-    def compute_demand(self):  # TODO: should be dependant on price?
+    def compute_demand(self):  # NOTE: should be dependant on price?
         return self.model.consumption * self.market_share / self.price
 
     def compute_labour_availability(self):
