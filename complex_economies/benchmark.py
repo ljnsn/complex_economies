@@ -24,6 +24,6 @@ benchmark_parameters = {
     'innovation': True,
     'social_policy': 'base',  # at the moment, 'base' and 'welfare' are possible
     'inventory_deprecation': 0,
-    'fix_supplier': True,
+    'fixed_init_supplier': True,
     # TODO: add supplier subset as param
 }

@@ -42,7 +42,7 @@ benchmark_parameters = {
     # 'innovation': False,
     'social_policy': 'base',  # at the moment, 'base' and 'welfare' are possible
     'inventory_deprecation': 0,
-    'fix_supplier': True,
+    'fixed_init_supplier': True,
 }
 
 # dictionary of user settable parameters - these map to the model __init__ parameters

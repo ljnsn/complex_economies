@@ -179,7 +179,7 @@ class ComplexEconomy(Model):
         self.social_policy = parameters['social_policy']
         self.inventory_deprecation = parameters['inventory_deprecation']
 
-        # parameters  # TODO: convert parameters to decimal
+        # parameters
         n_consumption_firms = parameters['n_consumption_firms']
         n_capital_firms = parameters['n_capital_firms']
         replicators = parameters['replicator_dynamics_coeff']
@@ -227,7 +227,7 @@ class ComplexEconomy(Model):
         # create consumption good firms
         supplier = 0
         for i in range(n_consumption_firms):
-            if parameters['fix_supplier']:
+            if parameters['fixed_init_supplier']:
                 if i % 4 == 0 and i != 0:
                     supplier += 1
             else:
