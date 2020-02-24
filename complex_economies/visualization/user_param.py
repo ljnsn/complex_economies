@@ -7,6 +7,21 @@ from mesa.visualization.UserParam import UserSettableParameter
 
 class UserParam(UserSettableParameter):
 
+    kinds = ('initial_condition', 'parameter')
+
+    def __init__(self, kind, param_type=None, name='', value=None,
+                 min_value=None, max_value=None, step=1, choices=list(),
+                 description=None):
+
+        super().__init__(
+            param_type, name, value, min_value, max_value, step, choices,
+            description
+        )
+
+        if kind not in self.kinds:
+            raise ValueError(f'kind can be one of these values: {self.kinds}')
+        self.kind = kind
+
     def render(self):
 
         element = None

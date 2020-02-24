@@ -21,26 +21,32 @@ cOrange = '#FF8100'
 # dictionary of user settable parameters - these map to the model __init__ parameters
 init_conditions = {
     "market_wage": UserParam(
+        'initial_condition',
         "slider", name="Market Wage", value=100, min_value=1, max_value=200,
         description="Initial market wage"
     ),
     "cpi": UserParam(
+        'initial_condition',
         "number", "Consumer Price Index", 1.3, 1, 2,
         description="Initial cpi level"
     ),
     "avg_labour_productivity": UserParam(
+        'initial_condition',
         "slider", "Average Labour Productivity", 100, 1, 200,
         description="Initial average labour productivity"
     ),
     "liquid_assets": UserParam(
+        'initial_condition',
         "slider", "Liquid Assets", 3000, 100, 10000,
         description="Initial liquid assets of each firm"
     ),
     "capital_stock": UserParam(
+        'initial_condition',
         "slider", "Capital Stock", 2000, 100, 10000,
         description="Initial capital stock of consumption firms"
     ),
     "labour_supply": UserParam(
+        'initial_condition',
         "slider", "Labour Supply", 3000, 100, 10000,
         description="Initial labour supply in the economy"
     ),
@@ -77,7 +83,7 @@ chart_3 = ChartModule(title='Chart3', series=[
     {"Label": "avg_cap_competitiveness", "Color": cRed},
     {"Label": "market_wage", "Color": cBlue}
 ])
-# TODO: plot prices and debt_stock / liquidity
+# TODO: plot debt_stock / liquidity
 chart_4 = ChartModule(title='Chart4', series=[
     {'Label': 'cpi', 'Color': cGreen},
     {'Label': 'avg_cap_price', 'Color': cRed}
