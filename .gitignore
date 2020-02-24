@@ -22,10 +22,10 @@ __pycache__/
 Pipfile
 Pipfile.lock
 
-# pdf docs
+# docs
 *.pdf
-
-
 *.ods
-
 *.yml
+
+# pytest
+.pytest_cache/
