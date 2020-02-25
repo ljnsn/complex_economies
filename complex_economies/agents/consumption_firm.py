@@ -114,7 +114,7 @@ class ConsumptionGoodFirm(Firm):
 
     def forecast_demand(self, myopic=True):
         if myopic:
-            return self.demand
+            return self.demand / self.price
         firm_data = self.model.datacollector.get_table_dataframe(
             'consumption_firm'
         )
