@@ -13,4 +13,4 @@ app = dash.Dash(
 )
 
 server = makeserver(app)
-# server.launch(debug=True)
+server.run()
