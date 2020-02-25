@@ -29,3 +29,6 @@ Pipfile.lock
 
 # pytest
 .pytest_cache/
+
+# unused css
+*.unused
