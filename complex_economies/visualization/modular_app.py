@@ -135,7 +135,7 @@ class ModularApp:
     ip = '127.0.0.1'
     port = port
     model = None
-    fps = 60
+    fps = 60  # TODO: make fps selectable
     last_update = -1
     reset_me = False
 
@@ -158,21 +158,21 @@ class ModularApp:
         self.last_update = self.get_current_time()
 
         self.model_kwargs = model_params if model_params else {}
-        self.init_conditions = [
-            val for param, val in model_params.items()
-            if isinstance(val, UserParam) and val.kind == 'initial_condition'
-        ]
-        self.user_params = [
-            val for param, val in model_params.items()
-            if isinstance(val, UserParam) and val.kind == 'parameter'
-        ]
+        self.init_conditions = {
+            key: cond for key, cond in model_params.items()
+            if isinstance(cond, UserParam) and cond.kind == 'initial_condition'
+        }
+        self.user_params = {
+            key: param for key, param in model_params.items()
+            if isinstance(param, UserParam) and param.kind == 'parameter'
+        }
         self.reset_model()
         self.app.layout = make_layout(
             self.model_name,
             self.description,
             self.visualization_elements,
-            self.init_conditions,
-            self.user_params,
+            list(self.init_conditions.values()),
+            list(self.user_params.values()),
             60 / self.fps * 1000
         )
         self.register_callbacks()
@@ -185,7 +185,7 @@ class ModularApp:
         total_time = (now.hour * 3600) + (now.minute * 60) + (now.second)
         return total_time
 
-    def reset_model(self):
+    def reset_model(self, params_and_conds=None):
         """ Reinstantiate the model object, using the current parameters. """
         model_params = {}
         for key, val in self.model_kwargs.items():
@@ -193,7 +193,10 @@ class ModularApp:
                 if val.param_type == 'static_text':
                     # static_text is never used for setting params
                     continue
-                model_params[key] = val.value
+                if params_and_conds:
+                    model_params[key] = params_and_conds[key]
+                else:
+                    model_params[key] = val.value
             else:
                 model_params[key] = val
 
@@ -218,11 +221,13 @@ class ModularApp:
             [Input('step-button', 'n_clicks_timestamp'),
              Input('reset-button', 'n_clicks_timestamp'),
              Input('run-interval', 'n_intervals')],
-            [State('step-counter', 'children')]
+            [State('step-counter', 'children'),
+             State('data-store', 'data')]
         )
-        def step_callback(step_ts, reset_ts, n_intervals, current_step):
+        def step_callback(step_ts, reset_ts, n_intervals, current_step,
+                          params_and_conds):
             if reset_ts > -1 and reset_ts > step_ts and not self.model.running:
-                self.reset_model()
+                self.reset_model(params_and_conds)
                 self.reset_me = True
                 return 0
             elif step_ts > -1 and step_ts > reset_ts and not self.model.running:
@@ -268,9 +273,24 @@ class ModularApp:
                         figure['data'][i]['y'].append(data[trace['name']])
             return figures
 
-    def launch(self, port=None, debug=False):
-        """ Run the app. """
-        if port is not None:
-            self.port = port
-        self.register_callbacks()
-        self.app.run_server(port=self.port, debug=debug)
+        @self.app.callback(
+            Output('data-store', 'data'),
+            [Input(cond.name, 'value') for cond in self.init_conditions.values()]
+            + [Input(param.name, 'value') for param in self.user_params.values()]
+        )
+        def update_conditions(*args):
+            params_and_conds = {}
+            conditions = list(self.init_conditions)
+            cond_dict = {cond: val for cond, val in zip(conditions, args)}
+            params_and_conds.update(cond_dict)
+            params = list(self.user_params)
+            param_dict = {param: val for param, val in zip(params, args)}
+            params_and_conds.update(param_dict)
+            return params_and_conds
+
+    # def launch(self, port=None, debug=False):
+    #     """ Run the app. """
+    #     if port is not None:
+    #         self.port = port
+    #     self.register_callbacks()
+    #     self.app.run_server(port=self.port, debug=debug)

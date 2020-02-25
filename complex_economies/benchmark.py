@@ -6,7 +6,7 @@ benchmark_parameters = {
     'replicator_dynamics_coeff': (-.5, -.5),
     'competitiveness_weights': ((1, 1), (1, 1)),
     'distribution_bounds': (-.05, .05),  # labour prod seems to increase way too fast
-    'labour_supply_growth': 0,  # .01
+    'labour_supply_growth': .01,  # .01
     'wage_setting': {
         'cpi_weight': 0.75,  # .75
         'avg_lp_weight': 1,

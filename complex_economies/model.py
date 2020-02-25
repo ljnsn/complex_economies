@@ -1,4 +1,4 @@
-
+"""Provides the ComplexEconomy class"""
 import logging
 from copy import copy, deepcopy
 from pprint import pformat
